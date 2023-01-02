@@ -11,15 +11,15 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "testaks"
+  name     = "RG-CLIENT-TEST-POC"
   location = "East US"
 }
 
 resource "azurerm_kubernetes_cluster" "cluster" {
-  name                = "learnk8scluster"
+  name                = "k8scluster"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "learnk8scluster"
+  dns_prefix          = "k8scluster"
 
   default_node_pool {
     name       = "default"
