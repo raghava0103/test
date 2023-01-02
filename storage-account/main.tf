@@ -25,3 +25,4 @@ resource "azurerm_storage_account" "lab" {
     environment = "Terraform Storage"
     CreatedBy   = "Admin"
   }
+}
