@@ -1,66 +1,83 @@
-resource "azurerm_resource_group" "example" {
-  name     = var.resource_group_name
-  location = var.location
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.48.0"
+    }
+  }
+}
+provider "azurerm" {
+  features {}
 }
 
-resource "azurerm_cosmosdb_account" "example" {
-  name                      = var.cosmosdb_account_name
-  location                  = var.cosmosdb_account_location
-  resource_group_name       = azurerm_resource_group.example.name
-  offer_type                = "Standard"
-  kind                      = "GlobalDocumentDB"
-  enable_automatic_failover = false
+resource "azurerm_resource_group" "rg" {
+  name     = "RG-CLIENT-TEST-POC"
+  location = "East US"
+}
+
+resource "azurerm_kubernetes_cluster" "cluster" {
+  name                = "k8scluster"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  dns_prefix          = "k8scluster"
+
+  default_node_pool {
+    name       = "default"
+    node_count = "2"
+    vm_size    = "standard_d2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+#########################Cosmos DB########################
+resource "azurerm_resource_group" "rg" {
+  name = "${var.resource_group_name}"
+  location = "${var.resource_group_location}"
+}
+resource "azurerm_cosmosdb_account" "acc" {
+  name = "${var.cosmos_db_account_name}"
+  location = "${azurerm_resource_group.rg.location}"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  offer_type = "Standard"
+  kind = "GlobalDocumentDB"
+  enable_automatic_failover = true
+  consistency_policy {
+    consistency_level = "Session"
+  }
+  
   geo_location {
-    location          = var.location
+    location = "${var.failover_location}"
+    failover_priority = 1
+  }
+  geo_location {
+    location = "${var.resource_group_location}"
     failover_priority = 0
   }
-  consistency_policy {
-    consistency_level       = "BoundedStaleness"
-    max_interval_in_seconds = 300
-    max_staleness_prefix    = 100000
-  }
-  depends_on = [
-    azurerm_resource_group.example
-  ]
 }
-
-resource "azurerm_cosmosdb_sql_database" "example" {
-  name                = var.cosmosdb_sqldb_name
-  resource_group_name = azurerm_resource_group.example.name
-  account_name        = azurerm_cosmosdb_account.example.name
-  autoscale_settings {
-    max_throughput = var.max_throughput
-  }
+resource "azurerm_cosmosdb_sql_database" "db" {
+  name = "products"
+  resource_group_name = "${azurerm_cosmosdb_account.acc.resource_group_name}"
+  account_name = "${azurerm_cosmosdb_account.acc.name}"
 }
+resource "azurerm_cosmosdb_sql_container" "coll" {
+  name = "Clothes"
+  resource_group_name = "${azurerm_cosmosdb_account.acc.resource_group_name}"
+  account_name = "${azurerm_cosmosdb_account.acc.name}"
+  database_name = "${azurerm_cosmosdb_sql_database.db.name}"
+  partition_key_path = "/ClothesId"
+}
+########################storage account########################
+resource "azurerm_storage_account" "lab" {
+  name                     = "stoargetest12345"
+  resource_group_name      = "testaks"
+  location                 = "East US"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 
-resource "azurerm_cosmosdb_sql_container" "example" {
-  name                  = var.sql_container_name
-  resource_group_name   = azurerm_resource_group.example.name
-  account_name          = azurerm_cosmosdb_account.example.name
-  database_name         = azurerm_cosmosdb_sql_database.example.name
-  partition_key_path    = "/definition/id"
-  partition_key_version = 1
-  autoscale_settings {
-    max_throughput = var.max_throughput
-  }
-
-  indexing_policy {
-    indexing_mode = "consistent"
-
-    included_path {
-      path = "/*"
-    }
-
-    included_path {
-      path = "/included/?"
-    }
-
-    excluded_path {
-      path = "/excluded/?"
-    }
-  }
-
-  unique_key {
-    paths = ["/definition/idlong", "/definition/idshort"]
+  tags = {
+    environment = "Terraform Storage"
+    CreatedBy   = "Admin"
   }
 }
