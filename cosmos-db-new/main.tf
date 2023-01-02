@@ -1,7 +1,13 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.48.0"
+    }
+  }
+}
 provider "azurerm" {
-  version = "~> 1.34.0"
-  subscription_id = "${var.subscription_id}"
-  tenant_id = "${var.tenant_id}"
+  features {}
 }
 resource "azurerm_resource_group" "rg" {
   name = "${var.resource_group_name}"
