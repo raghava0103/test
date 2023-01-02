@@ -32,10 +32,6 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 }
 #########################Cosmos DB########################
-resource "azurerm_resource_group" "rg" {
-  name = "${var.resource_group_name}"
-  location = "${var.resource_group_location}"
-}
 resource "azurerm_cosmosdb_account" "acc" {
   name = "${var.cosmos_db_account_name}"
   location = "${azurerm_resource_group.rg.location}"
@@ -57,21 +53,21 @@ resource "azurerm_cosmosdb_account" "acc" {
   }
 }
 resource "azurerm_cosmosdb_sql_database" "db" {
-  name = "products"
+  name = "sql-db"
   resource_group_name = "${azurerm_cosmosdb_account.acc.resource_group_name}"
   account_name = "${azurerm_cosmosdb_account.acc.name}"
 }
 resource "azurerm_cosmosdb_sql_container" "coll" {
-  name = "Clothes"
+  name = "products"
   resource_group_name = "${azurerm_cosmosdb_account.acc.resource_group_name}"
   account_name = "${azurerm_cosmosdb_account.acc.name}"
   database_name = "${azurerm_cosmosdb_sql_database.db.name}"
-  partition_key_path = "/ClothesId"
+  partition_key_path = "/productsID"
 }
 ########################storage account########################
 resource "azurerm_storage_account" "lab" {
-  name                     = "stoargetest12345"
-  resource_group_name      = "testaks"
+  name                     = "storageasendiaon"
+  resource_group_name      = "RG-CLIENT-TEST-POC"
   location                 = "East US"
   account_tier             = "Standard"
   account_replication_type = "LRS"
