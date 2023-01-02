@@ -14,5 +14,5 @@ variable "cosmos_db_account_name" {
   default = "test-cb"
 }
 variable "failover_location" {
-  default = "East US"
+  default = "East US 2"
 }
