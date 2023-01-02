@@ -1,42 +1,18 @@
 variable "resource_group_name" {
-  type        = string
-  description = "RG-CLIENT-TEST-POC"
+  default = "testaks"
 }
-
-variable "location" {
-  type        = string
-  description = "East US"
+variable "resource_group_location" {
+  default = "East US"
 }
-
-variable "cosmosdb_account_name" {
-  type        = string
-  description = "Cosmos db account name"
+variable "subscription_id" {
+  default = "5e033ca6-1e01-4dca-b6d5-4e779d0e0aeb"
 }
-
-variable "cosmosdb_account_location" {
-  type        = string
-  description = "Cosmos db account location"
+variable "tenant_id" {
+  default = "87e35bb7-0b2f-43cc-94e0-65248787e14c"
 }
-
-variable "cosmosdb_sqldb_name" {
-  type        = string
-  description = "value"
+variable "cosmos_db_account_name" {
+  default = "test-cb"
 }
-
-variable "sql_container_name" {
-  type        = string
-  description = "SQL API container name."
-}
-
-variable "max_throughput" {
-  type        = number
-  description = "Cosmos db database max throughput"
-  validation {
-    condition     = var.max_throughput >= 4000 && var.max_throughput <= 1000000
-    error_message = "Cosmos db autoscale max throughput should be equal to or greater than 4000 and less than or equal to 1000000."
-  }
-  validation {
-    condition     = var.max_throughput % 100 == 0
-    error_message = "Cosmos db max throughput should be in increments of 100."
-  }
+variable "failover_location" {
+  default = "East US 2"
 }
